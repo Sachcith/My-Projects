@@ -95,7 +95,7 @@ class Connect4:
         if player:
             max = float('-inf')
             for i in range(1,7+1):
-
+                pass
 
     def start_game(self):
         pass
