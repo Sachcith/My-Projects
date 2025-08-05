@@ -91,14 +91,33 @@ class Connect4:
 
     def next_move(self,player,cur_depth,max_depth,column):
         if cur_depth == max_depth:
-            return self.__board.heuristic(column)
+            return self.__board.heuristic(column),column
         if player:
-            max = float('-inf')
+            ma = float('-inf')
+            index = -1
             for i in range(1,7+1):
-                pass
+                if self.__board.insert("X",i):
+                    temp,j = self.next_move(False,cur_depth+1,max_depth,i)
+                    if temp > ma:
+                        ma = temp
+                        index = i
+                    self.__board.delete(i)
+            return ma,index
+        else:
+            mi = float('inf')
+            index = -1
+            for i in range(1,7+1):
+                if self.__board.insert("X",i):
+                    temp,j = self.next_move(False,cur_depth+1,max_depth,i)
+                    if temp < mi:
+                        mi = temp
+                        index = i
+                    self.__board.delete(i)
+            return mi,index
+            
 
     def start_game(self):
-        pass
+        print("Game Started")
 
 
 
