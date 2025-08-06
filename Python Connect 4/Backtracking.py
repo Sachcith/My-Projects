@@ -16,6 +16,8 @@ class Board:
                 else:
                     print("-",end=" ")
             print()
+        for i in range(self.width):
+            print(i+1,end=" ")
         print()
 
     def insert(self,column,data):
@@ -47,7 +49,7 @@ class Board:
                 y1 = column + y[i][j]
                 x1 = index + x[i][j]
                 if x1>=0 and y1>=0 and x1<self.height and y1<self.width:
-                    if self.board[x1][y1]==temp or self.board[x1][y1]==0:
+                    if (self.board[x1][y1]==temp or self.board[x1][y1]==0):# and y1>=self.valid[x1]-1:
                         num[self.board[x1][y1]]+=1
                     else:
                         flag=False
@@ -64,7 +66,7 @@ class Board:
                 y1 = column + y[i][j]
                 x1 = index + x[i][j]
                 if x1>=0 and y1>=0 and x1<self.height and y1<self.width:
-                    if self.board[x1][y1]==temp:
+                    if self.board[x1][y1]==temp or self.board[x1][y1]==0:# and y1>=self.valid[x1]-1:
                         num[self.board[x1][y1]]+=1
                     else:
                         break
@@ -111,6 +113,53 @@ class Board:
         self.insert(column,temp)
         return ans
 
+    def winloss(self,column,p=False):
+        num = {"X":0,"O":0,0:0}
+        pos = {0:0,1:0,2:0,3:0,4:0}
+        x = [[-1,-2,-3],[0,0,0],[1,2,3],[1,2,3],[1,2,3],[0,0,0],[-1,-2,-3]]
+        y = [[-1,-2,-3],[-1,-2,-3],[-1,-2,-3],[0,0,0],[1,2,3],[1,2,3],[1,2,3]]
+        index = self.height - self.valid[column]
+        temp = self.board[index][column]
+        for i in range(7):
+            num = {"X":0,"O":0,0:0}
+            num[temp]=1
+            flag = True
+            for j in range(3):
+                y1 = column + y[i][j]
+                x1 = index + x[i][j]
+                if x1>=0 and y1>=0 and x1<self.height and y1<self.width:
+                    if (self.board[x1][y1]==temp):# and y1>=self.valid[x1]-1:
+                        num[self.board[x1][y1]]+=1
+                    else:
+                        #flag=False
+                        break
+            if flag:
+                pos[num[temp]]+=1
+        
+        seven = [0 for i in range(7)]
+        for i in range(7):
+            num = {"X":0,"O":0,0:0}
+            num[temp]=1
+            flag = True
+            for j in range(3):
+                y1 = column + y[i][j]
+                x1 = index + x[i][j]
+                if x1>=0 and y1>=0 and x1<self.height and y1<self.width:
+                    if self.board[x1][y1]==temp:# and y1>=self.valid[x1]-1:
+                        num[self.board[x1][y1]]+=1
+                    else:
+                        break
+            seven[i]=num[temp]
+        xtemp = [0,1,2]
+        for i in range(3):
+            if seven[xtemp[i]]+seven[xtemp[i]+4]-1>=3:
+                if seven[xtemp[i]]+seven[xtemp[i]+4]-1>3:
+                    pos[4]+=1
+                else:
+                    pos[3]+=1
+        if p:
+            print(seven)
+        return pos
 class Connect4:
     __board = None
     __player = None
@@ -122,11 +171,11 @@ class Connect4:
         if cur_depth == max_depth:
             return self.__board.heuristic(column),column
         elif cur_depth!=0:
-            score = self.__board.heuristic(column)
-            if score<=-10000:
-                return score,column
-            elif score>=10000:
-                return score,column
+            score = self.__board.winloss(column)
+            if score[4]>0 and not player:
+                return float('inf'),column
+            elif score[4]>0 and player:
+                return float('-inf'),column
 
         if player:
             ma = float('-inf')
@@ -161,35 +210,38 @@ class Connect4:
             if self.__player:
                 self.__player = False
                 temp = int(input("Enter a value from 1-7: "))
-                move = temp
-                while temp>6 or temp<0:
+                move = temp-1
+                while temp>7 or temp<1:
                     print(temp,"is not in range.")
                     temp = int(input("Enter a value from 1-7: "))
-                    move = temp
-                temp = self.__board.insert(temp,"X")
+                    move = temp-1
+                temp = self.__board.insert(temp-1,"X")
                 while temp!=True:
                     print("Column alread full")
                     temp = int(input("Enter a value from 1-7: "))
-                    move = temp
-                    while temp>6 or temp<0:
+                    move = temp-1
+                    while temp>7 or temp<1:
                         print(temp,"is not in range.")
                         temp = int(input("Enter a value from 1-7: "))
-                        move = temp
-                    temp = self.__board.insert(temp,"X")
+                        move = temp-1
+                    temp = self.__board.insert(temp-1,"X")
             else:
                 self.__player = True
                 val,index = self.next_move(False,0,6)
                 self.__board.insert(index,"O")
                 move = index
-            self.__board.heurSupport(move,True)
+            self.__board.heurSupport(move)#,True)
+            final = self.__board.winloss(move,True)
+            print("Current move:",move+1)
             self.__board.disp()
-            final = self.__board.heurSupport(move)
             if final[4]>0 and (not self.__player):
                 print("X won")
                 break
             elif final[4]>0 and self.__player:
                 print("O won")
                 break
+        if count==0:
+            print("Draw......Noice")
         print("Game Ended!!!")
             
 
@@ -211,6 +263,7 @@ print(board.heurSupport(4))
 print(board.heuristic(4))
 '''
 
+'''
 x = [[-1,-2,-3],[0,0,0],[1,2,3],[1,2,3],[1,2,3],[0,0,0],[-1,-2,-3]]
 y = [[-1,-2,-3],[-1,-2,-3],[-1,-2,-3],[0,0,0],[1,2,3],[1,2,3],[1,2,3]]
 a = [["-" for i in range(7)] for j in range(7)]
@@ -228,6 +281,7 @@ for i in a:
         print(j,end=" ")
     print()
 print()
+'''
 
 temp = Connect4()
 temp.start_game()
