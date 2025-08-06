@@ -98,7 +98,7 @@ class Board:
                 heur[i] = heur[i+1]
             heur[4]=0
             #ans = ans - self.score(heur)
-            ans = ans - self.score(self.heurSupport(column))
+            ans = ans + self.score(self.heurSupport(column))
         else:
             self.insert(column,"X")
             heur = self.heurSupport(column)
@@ -106,7 +106,7 @@ class Board:
                 heur[i] = heur[i+1]
             heur[4]=0
             #ans = self.score(heur) - ans
-            ans = ans - self.score(self.heurSupport(column))
+            ans = -1*(ans + self.score(self.heurSupport(column)))
         self.delete(column)
         self.insert(column,temp)
         return ans
@@ -121,6 +121,13 @@ class Connect4:
     def next_move(self,player,cur_depth,max_depth,column=0):
         if cur_depth == max_depth:
             return self.__board.heuristic(column),column
+        elif cur_depth!=0:
+            score = self.__board.heuristic(column)
+            if score<=-10000:
+                return score,column
+            elif score>=10000:
+                return score,column
+
         if player:
             ma = float('-inf')
             index = -1
@@ -171,16 +178,16 @@ class Connect4:
                     temp = self.__board.insert(temp,"X")
             else:
                 self.__player = True
-                val,index = self.next_move(False,0,5)
+                val,index = self.next_move(False,0,6)
                 self.__board.insert(index,"O")
                 move = index
             self.__board.heurSupport(move,True)
             self.__board.disp()
-            final = self.__board.heuristic(move)
-            if final>=10000:
+            final = self.__board.heurSupport(move)
+            if final[4]>0 and (not self.__player):
                 print("X won")
                 break
-            elif final<=-10000:
+            elif final[4]>0 and self.__player:
                 print("O won")
                 break
         print("Game Ended!!!")
