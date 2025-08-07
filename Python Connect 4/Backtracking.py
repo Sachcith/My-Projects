@@ -18,7 +18,7 @@ class Board:
             print()
         for i in range(self.width):
             print(i+1,end=" ")
-        print()
+        print("\n")
 
     def insert(self,column,data):
         if self.valid[column]==self.height:
@@ -54,6 +54,8 @@ class Board:
                     else:
                         flag=False
                         break
+                else:
+                    break
             if flag:
                 pos[num[temp]]+=1
         
@@ -70,6 +72,8 @@ class Board:
                         num[self.board[x1][y1]]+=1
                     else:
                         break
+                else:
+                    break
             seven[i]=num[temp]
         xtemp = [0,1,2]
         for i in range(3):
@@ -100,7 +104,7 @@ class Board:
                 heur[i] = heur[i+1]
             heur[4]=0
             #ans = ans - self.score(heur)
-            ans = ans + self.score(self.heurSupport(column))
+            ans = ans + 2*self.score(self.heurSupport(column))
         else:
             self.insert(column,"X")
             heur = self.heurSupport(column)
@@ -108,7 +112,7 @@ class Board:
                 heur[i] = heur[i+1]
             heur[4]=0
             #ans = self.score(heur) - ans
-            ans = -1*(ans + self.score(self.heurSupport(column)))
+            ans = -1*(ans + 2*self.score(self.heurSupport(column)))
         self.delete(column)
         self.insert(column,temp)
         return ans
@@ -120,6 +124,7 @@ class Board:
         y = [[-1,-2,-3],[-1,-2,-3],[-1,-2,-3],[0,0,0],[1,2,3],[1,2,3],[1,2,3]]
         index = self.height - self.valid[column]
         temp = self.board[index][column]
+        '''
         for i in range(7):
             num = {"X":0,"O":0,0:0}
             num[temp]=1
@@ -133,8 +138,11 @@ class Board:
                     else:
                         #flag=False
                         break
+                else:
+                    break
             if flag:
                 pos[num[temp]]+=1
+        '''
         
         seven = [0 for i in range(7)]
         for i in range(7):
@@ -149,6 +157,8 @@ class Board:
                         num[self.board[x1][y1]]+=1
                     else:
                         break
+                else:
+                    break
             seven[i]=num[temp]
         xtemp = [0,1,2]
         for i in range(3):
@@ -160,6 +170,7 @@ class Board:
         if p:
             print(seven)
         return pos
+    
 class Connect4:
     __board = None
     __player = None
@@ -199,6 +210,46 @@ class Connect4:
                         index = i
                     self.__board.delete(i)
             return mi,index
+
+
+    def next_move_alpha_beta(self,player,cur_depth,max_depth,column=0,alpha=float('-inf'),beta=float('inf')):
+        if cur_depth == max_depth:
+            return self.__board.heuristic(column),column
+        elif cur_depth!=0:
+            score = self.__board.winloss(column)
+            if score[4]>0 and not player:
+                return float('inf'),column
+            elif score[4]>0 and player:
+                return float('-inf'),column
+
+        if player:
+            ma = float('-inf')
+            index = -1
+            for i in range(7):
+                if self.__board.insert(i,"X"):
+                    temp,j = self.next_move_alpha_beta(False,cur_depth+1,max_depth,i,alpha,beta)
+                    if temp >= ma:
+                        ma = temp
+                        index = i
+                    self.__board.delete(i)
+                    alpha = max(temp,alpha)
+                    if alpha >= beta:
+                        break
+            return ma,index
+        else:
+            mi = float('inf')
+            index = -1
+            for i in range(7):
+                if self.__board.insert(i,"O"):
+                    temp,j = self.next_move_alpha_beta(True,cur_depth+1,max_depth,i,alpha,beta)
+                    if temp < mi:
+                        mi = temp
+                        index = i
+                    self.__board.delete(i)
+                    beta = min(temp,beta)
+                    if alpha >= beta:
+                        break
+            return mi,index
             
 
     def start_game(self):
@@ -227,7 +278,7 @@ class Connect4:
                     temp = self.__board.insert(temp-1,"X")
             else:
                 self.__player = True
-                val,index = self.next_move(False,0,6)
+                val,index = self.next_move_alpha_beta(False,0,6)
                 self.__board.insert(index,"O")
                 move = index
             self.__board.heurSupport(move)#,True)
