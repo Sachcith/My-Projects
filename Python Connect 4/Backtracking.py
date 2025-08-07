@@ -11,10 +11,12 @@ class Board:
     def disp(self):
         for i in self.board:
             for j in i:
-                if j!=0:
-                    print(j,end=" ")
+                if j=="X":
+                    print("🟢",end="")
+                elif j=="O":
+                    print("🔴",end="")
                 else:
-                    print("-",end=" ")
+                    print("⚪",end="")
             print()
         for i in range(self.width):
             print(i+1,end=" ")
@@ -37,6 +39,8 @@ class Board:
     def heurSupport(self,column,p=False):
         num = {"X":0,"O":0,0:0}
         pos = {0:0,1:0,2:0,3:0,4:0}
+        if column<0 or column>=self.width:
+            return pos
         x = [[-1,-2,-3],[0,0,0],[1,2,3],[1,2,3],[1,2,3],[0,0,0],[-1,-2,-3]]
         y = [[-1,-2,-3],[-1,-2,-3],[-1,-2,-3],[0,0,0],[1,2,3],[1,2,3],[1,2,3]]
         index = self.height - self.valid[column]
@@ -120,11 +124,13 @@ class Board:
     def winloss(self,column,p=False):
         num = {"X":0,"O":0,0:0}
         pos = {0:0,1:0,2:0,3:0,4:0}
+        if column<0 or column>=self.width:
+            return pos
         x = [[-1,-2,-3],[0,0,0],[1,2,3],[1,2,3],[1,2,3],[0,0,0],[-1,-2,-3]]
         y = [[-1,-2,-3],[-1,-2,-3],[-1,-2,-3],[0,0,0],[1,2,3],[1,2,3],[1,2,3]]
         index = self.height - self.valid[column]
         temp = self.board[index][column]
-        '''
+        
         for i in range(7):
             num = {"X":0,"O":0,0:0}
             num[temp]=1
@@ -136,13 +142,13 @@ class Board:
                     if (self.board[x1][y1]==temp):# and y1>=self.valid[x1]-1:
                         num[self.board[x1][y1]]+=1
                     else:
-                        #flag=False
+                        flag=False
                         break
                 else:
                     break
             if flag:
                 pos[num[temp]]+=1
-        '''
+        
         
         seven = [0 for i in range(7)]
         for i in range(7):
@@ -255,6 +261,7 @@ class Connect4:
     def start_game(self):
         print("Game Started")
         count = 42
+        self.__board.disp()
         while count!=0:
             count-=1
             move = -1
@@ -281,15 +288,73 @@ class Connect4:
                 val,index = self.next_move_alpha_beta(False,0,6)
                 self.__board.insert(index,"O")
                 move = index
+                print(index)
             self.__board.heurSupport(move)#,True)
             final = self.__board.winloss(move,True)
             print("Current move:",move+1)
             self.__board.disp()
             if final[4]>0 and (not self.__player):
-                print("X won")
+                print("🟢 won")
                 break
             elif final[4]>0 and self.__player:
-                print("O won")
+                print("🔴 won")
+                break
+        if count==0:
+            print("Draw......Noice")
+        print("Game Ended!!!")
+
+    def start_game_PVP(self):
+        print("Game Started")
+        count = 42
+        self.__board.disp()
+        while count!=0:
+            count-=1
+            move = -1
+            if self.__player:
+                self.__player = False
+                temp = int(input("Enter a value from 1-7: "))
+                move = temp-1
+                while temp>7 or temp<1:
+                    print(temp,"is not in range.")
+                    temp = int(input("Enter a value from 1-7: "))
+                    move = temp-1
+                temp = self.__board.insert(temp-1,"X")
+                while temp!=True:
+                    print("Column alread full")
+                    temp = int(input("Enter a value from 1-7: "))
+                    move = temp-1
+                    while temp>7 or temp<1:
+                        print(temp,"is not in range.")
+                        temp = int(input("Enter a value from 1-7: "))
+                        move = temp-1
+                    temp = self.__board.insert(temp-1,"X")
+            else:
+                self.__player = True
+                temp = int(input("Enter a value from 1-7: "))
+                move = temp-1
+                while temp>7 or temp<1:
+                    print(temp,"is not in range.")
+                    temp = int(input("Enter a value from 1-7: "))
+                    move = temp-1
+                temp = self.__board.insert(temp-1,"O")
+                while temp!=True:
+                    print("Column alread full")
+                    temp = int(input("Enter a value from 1-7: "))
+                    move = temp-1
+                    while temp>7 or temp<1:
+                        print(temp,"is not in range.")
+                        temp = int(input("Enter a value from 1-7: "))
+                        move = temp-1
+                    temp = self.__board.insert(temp-1,"O")
+            self.__board.heurSupport(move)#,True)
+            final = self.__board.winloss(move,True)
+            print("Current move:",move+1)
+            self.__board.disp()
+            if final[4]>0 and (not self.__player):
+                print("🟢 won")
+                break
+            elif final[4]>0 and self.__player:
+                print("🔴 won")
                 break
         if count==0:
             print("Draw......Noice")
