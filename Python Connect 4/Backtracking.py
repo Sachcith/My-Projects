@@ -182,17 +182,17 @@ class Connect4:
     __player = None
     def __init__(self):
         self.__board = Board()
-        self.__player = True
+        self.__player = False
 
     def next_move(self,player,cur_depth,max_depth,column=0):
-        if cur_depth == max_depth:
-            return self.__board.heuristic(column),column
-        elif cur_depth!=0:
+        if cur_depth!=0:
             score = self.__board.winloss(column)
             if score[4]>0 and not player:
                 return float('inf'),column
             elif score[4]>0 and player:
                 return float('-inf'),column
+        if cur_depth == max_depth:
+            return self.__board.heuristic(column),column
 
         if player:
             ma = float('-inf')
@@ -219,14 +219,14 @@ class Connect4:
 
 
     def next_move_alpha_beta(self,player,cur_depth,max_depth,column=0,alpha=float('-inf'),beta=float('inf')):
+        if cur_depth!=0:
+            score = self.__board.winloss(column)
+            if score[4]>0 and (not player):
+                return 10**5,column
+            if score[4]>0 and player:
+                return -(10**5),column
         if cur_depth == max_depth:
             return self.__board.heuristic(column),column
-        elif cur_depth!=0:
-            score = self.__board.winloss(column)
-            if score[4]>0 and not player:
-                return float('inf'),column
-            elif score[4]>0 and player:
-                return float('-inf'),column
 
         if player:
             ma = float('-inf')
@@ -234,12 +234,16 @@ class Connect4:
             for i in range(7):
                 if self.__board.insert(i,"X"):
                     temp,j = self.next_move_alpha_beta(False,cur_depth+1,max_depth,i,alpha,beta)
+                    #if temp==float('inf'):
+                        #print("Temp inf")
                     if temp >= ma:
                         ma = temp
                         index = i
                     self.__board.delete(i)
                     alpha = max(temp,alpha)
+                    #beta = min(temp,beta)
                     if alpha >= beta:
+                        #print("Break 1")
                         break
             return ma,index
         else:
@@ -248,12 +252,16 @@ class Connect4:
             for i in range(7):
                 if self.__board.insert(i,"O"):
                     temp,j = self.next_move_alpha_beta(True,cur_depth+1,max_depth,i,alpha,beta)
+                    #if temp==float('-inf'):
+                        #print(temp)
                     if temp < mi:
                         mi = temp
                         index = i
                     self.__board.delete(i)
                     beta = min(temp,beta)
+                    #alpha = max(temp,alpha)
                     if alpha >= beta:
+                        #print("Break 2")
                         break
             return mi,index
             
@@ -288,8 +296,7 @@ class Connect4:
                 val,index = self.next_move_alpha_beta(False,0,6)
                 self.__board.insert(index,"O")
                 move = index
-                print(index)
-            self.__board.heurSupport(move)#,True)
+                print(f"Index: {index} Value: {val}")
             final = self.__board.winloss(move,True)
             print("Current move:",move+1)
             self.__board.disp()
@@ -359,7 +366,38 @@ class Connect4:
         if count==0:
             print("Draw......Noice")
         print("Game Ended!!!")
-            
+
+    def start_game_AI_ONLY(self):
+        print("Game Started")
+        count = 42
+        self.__board.disp()
+        while count!=0:
+            count-=1
+            move = -1
+            if self.__player:
+                self.__player = False
+                val,index = self.next_move_alpha_beta(False,0,6)
+                self.__board.insert(index,"X")
+                move = index
+            else:
+                self.__player = True
+                val,index = self.next_move_alpha_beta(False,0,6)
+                self.__board.insert(index,"O")
+                move = index
+            _ = input("Press Enter to show next move:")
+            print(f"Index: {index} Value: {val}")
+            final = self.__board.winloss(move,True)
+            print("Current move:",move+1)
+            self.__board.disp()
+            if final[4]>0 and (not self.__player):
+                print("🟢 won")
+                break
+            elif final[4]>0 and self.__player:
+                print("🔴 won")
+                break
+        if count==0:
+            print("Draw......Noice")
+        print("Game Ended!!!")      
 
 
 
@@ -400,5 +438,6 @@ print()
 '''
 
 temp = Connect4()
-temp.start_game()
+temp.start_game_AI_ONLY()
 
+# 3 4 5 5 3 4 4 2 1 3 3
