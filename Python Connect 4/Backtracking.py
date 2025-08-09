@@ -45,7 +45,7 @@ class Board:
         y = [[-1,-2,-3],[-1,-2,-3],[-1,-2,-3],[0,0,0],[1,2,3],[1,2,3],[1,2,3]]
         index = self.height - self.valid[column]
         temp = self.board[index][column]
-        for i in range(7):
+        '''for i in range(7):
             num = {"X":0,"O":0,0:0}
             num[temp]=1
             flag = True
@@ -56,12 +56,12 @@ class Board:
                     if (self.board[x1][y1]==temp or self.board[x1][y1]==0):# and y1>=self.valid[x1]-1:
                         num[self.board[x1][y1]]+=1
                     else:
-                        flag=False
+                        #flag=False #changed aug 8th night
                         break
                 else:
                     break
             if flag:
-                pos[num[temp]]+=1
+                pos[num[temp]]+=1'''
         
         seven = [0 for i in range(7)]
         for i in range(7):
@@ -218,51 +218,63 @@ class Connect4:
             return mi,index
 
 
-    def next_move_alpha_beta(self,player,cur_depth,max_depth,column=0,alpha=float('-inf'),beta=float('inf')):
+    def next_move_alpha_beta(self,player,cur_depth,max_depth,column=0,alpha=float('-inf'),beta=float('inf'),p=False):
         if cur_depth!=0:
             score = self.__board.winloss(column)
             if score[4]>0 and (not player):
                 return 10**5,column
+                #return float('inf'),column
             if score[4]>0 and player:
                 return -(10**5),column
+                #return float('-inf'),column
         if cur_depth == max_depth:
             return self.__board.heuristic(column),column
 
         if player:
             ma = float('-inf')
             index = -1
+            hello = ["N" for i in range(7)]
             for i in range(7):
                 if self.__board.insert(i,"X"):
                     temp,j = self.next_move_alpha_beta(False,cur_depth+1,max_depth,i,alpha,beta)
                     #if temp==float('inf'):
                         #print("Temp inf")
-                    if temp >= ma:
-                        ma = temp
-                        index = i
+                    hello[i]=temp
                     self.__board.delete(i)
-                    alpha = max(temp,alpha)
-                    #beta = min(temp,beta)
-                    if alpha >= beta:
-                        #print("Break 1")
-                        break
+                    if j!=-1:
+                        if temp > ma:
+                            ma = temp
+                            index = i
+                        alpha = max(temp,alpha)
+                        #beta = min(temp,beta)
+                        if alpha >= beta:
+                            #print("Break 1")
+                            break
+            if p:
+                print(hello)
             return ma,index
         else:
             mi = float('inf')
             index = -1
+            hello = ["N" for i in range(7)]
             for i in range(7):
                 if self.__board.insert(i,"O"):
                     temp,j = self.next_move_alpha_beta(True,cur_depth+1,max_depth,i,alpha,beta)
                     #if temp==float('-inf'):
                         #print(temp)
-                    if temp < mi:
-                        mi = temp
-                        index = i
+                    hello[i]=temp
                     self.__board.delete(i)
-                    beta = min(temp,beta)
-                    #alpha = max(temp,alpha)
-                    if alpha >= beta:
-                        #print("Break 2")
-                        break
+                    if j!=-1:
+                        if temp < mi:
+                            mi = temp
+                            index = i
+                        beta = min(temp,beta)
+                        #alpha = max(temp,alpha)
+                        if alpha >= beta:
+                            #print("Break 2")
+                            break
+            if p:
+                print(hello)
             return mi,index
             
 
@@ -293,7 +305,7 @@ class Connect4:
                     temp = self.__board.insert(temp-1,"X")
             else:
                 self.__player = True
-                val,index = self.next_move_alpha_beta(False,0,6)
+                val,index = self.next_move_alpha_beta(False,0,6,p=True)
                 self.__board.insert(index,"O")
                 move = index
                 print(f"Index: {index} Value: {val}")
@@ -438,6 +450,6 @@ print()
 '''
 
 temp = Connect4()
-temp.start_game_AI_ONLY()
+temp.start_game()
 
 # 3 4 5 5 3 4 4 2 1 3 3
