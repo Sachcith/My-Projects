@@ -234,7 +234,9 @@ class Connect4:
             ma = float('-inf')
             index = -1
             hello = ["N" for i in range(7)]
-            for i in range(7):
+            #for i in range(7):
+            #for i in range(6,-1,-1):
+            for i in [3,2,4,1,5,0,6]:
                 if self.__board.insert(i,"X"):
                     temp,j = self.next_move_alpha_beta(False,cur_depth+1,max_depth,i,alpha,beta)
                     #if temp==float('inf'):
@@ -242,7 +244,7 @@ class Connect4:
                     hello[i]=temp
                     self.__board.delete(i)
                     if j!=-1:
-                        if temp > ma:
+                        if temp >= ma:
                             ma = temp
                             index = i
                         alpha = max(temp,alpha)
@@ -257,7 +259,9 @@ class Connect4:
             mi = float('inf')
             index = -1
             hello = ["N" for i in range(7)]
-            for i in range(7):
+            #for i in range(7):
+            #for i in range(6,-1,-1):
+            for i in [3,2,4,1,5,0,6]:
                 if self.__board.insert(i,"O"):
                     temp,j = self.next_move_alpha_beta(True,cur_depth+1,max_depth,i,alpha,beta)
                     #if temp==float('-inf'):
