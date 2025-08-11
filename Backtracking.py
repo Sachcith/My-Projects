@@ -182,7 +182,7 @@ class Connect4:
     __player = None
     def __init__(self):
         self.__board = Board()
-        self.__player = False
+        self.__player = True
 
     def next_move(self,player,cur_depth,max_depth,column=0):
         if cur_depth!=0:
@@ -241,6 +241,7 @@ class Connect4:
                     temp,j = self.next_move_alpha_beta(False,cur_depth+1,max_depth,i,alpha,beta)
                     #if temp==float('inf'):
                         #print("Temp inf")
+                    temp = temp + max_depth - cur_depth
                     hello[i]=temp
                     self.__board.delete(i)
                     if j!=-1:
@@ -266,6 +267,7 @@ class Connect4:
                     temp,j = self.next_move_alpha_beta(True,cur_depth+1,max_depth,i,alpha,beta)
                     #if temp==float('-inf'):
                         #print(temp)
+                    temp = temp + max_depth - cur_depth
                     hello[i]=temp
                     self.__board.delete(i)
                     if j!=-1:
