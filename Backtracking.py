@@ -222,10 +222,10 @@ class Connect4:
         if cur_depth!=0:
             score = self.__board.winloss(column)
             if score[4]>0 and (not player):
-                return 10**5,column
+                return 10**5 + max_depth - cur_depth,column
                 #return float('inf'),column
             if score[4]>0 and player:
-                return -(10**5),column
+                return -(10**5 + max_depth - cur_depth),column
                 #return float('-inf'),column
         if cur_depth == max_depth:
             return self.__board.heuristic(column),column
@@ -241,11 +241,11 @@ class Connect4:
                     temp,j = self.next_move_alpha_beta(False,cur_depth+1,max_depth,i,alpha,beta)
                     #if temp==float('inf'):
                         #print("Temp inf")
-                    temp = temp + max_depth - cur_depth
-                    hello[i]=temp
+                    #temp = temp + max_depth - cur_depth
+                    hello[i]=temp + max_depth - cur_depth
                     self.__board.delete(i)
                     if j!=-1:
-                        if temp >= ma:
+                        if temp > ma:
                             ma = temp
                             index = i
                         alpha = max(temp,alpha)
@@ -255,7 +255,7 @@ class Connect4:
                             break
             if p:
                 print(hello)
-            return ma,index
+            return ma + max_depth - cur_depth,index
         else:
             mi = float('inf')
             index = -1
@@ -267,8 +267,8 @@ class Connect4:
                     temp,j = self.next_move_alpha_beta(True,cur_depth+1,max_depth,i,alpha,beta)
                     #if temp==float('-inf'):
                         #print(temp)
-                    temp = temp + max_depth - cur_depth
-                    hello[i]=temp
+                    #temp = temp + max_depth - cur_depth
+                    hello[i]=temp - max_depth + cur_depth,j
                     self.__board.delete(i)
                     if j!=-1:
                         if temp < mi:
@@ -281,7 +281,7 @@ class Connect4:
                             break
             if p:
                 print(hello)
-            return mi,index
+            return mi - max_depth + cur_depth,index
             
 
     def start_game(self):
