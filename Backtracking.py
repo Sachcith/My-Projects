@@ -253,6 +253,8 @@ class Connect4:
                         if alpha >= beta:
                             #print("Break 1")
                             break
+            if hello==["N" for i in range(7)]:
+                return 0,column
             if p:
                 print(hello)
             return ma + max_depth - cur_depth,index
@@ -279,6 +281,8 @@ class Connect4:
                         if alpha >= beta:
                             #print("Break 2")
                             break
+            if hello==["N" for i in range(7)]:
+                return 0,column
             if p:
                 print(hello)
             return mi - max_depth + cur_depth,index
