@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect 4 Game</title>
+</head>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<style>
+    body {
+        margin: 0;                     
+        height: 100vh;                 
+        display: flex;                 
+        flex-direction: column;
+        justify-content: center;       
+        align-items: center;            
+    }
+    .board {
+        border: 2px solid black;
+        border-radius: 8%;
+        padding: 0.5%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    td {
+        padding: 15px 20px;
+        border: 2px solid black;
+        border-radius: 100%;
+        color: transparent;
+        cursor: pointer;
+    }
+    .debug {
+        text-align: center;
+    }
+</style>
+
+<body>
+    <div class="board">
+        <table id="table">
+            {% for i in range(6) %}
+                <tr>
+                    {% for j in range(7) %}
+                        <td data-val="{{i*7+j}}" data-col="{{j}}">{{i*7+j}}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div class="Output">
+        <h3 id="output">Debug Statements Appear Here</h3>
+    </div>
+</body>
+
+<script>
+    const socket = io();
+    let board = document.getElementById("table");
+    board.addEventListener("click",(e)=>{
+        if(e.target.tagName !== "TD") return;
+        let col = e.target.dataset.col;
+        console.log("Column Clicked: "+col);
+        socket.emit("move",{"col":col})
+    });
+
+    socket.on("debug",(data)=>{
+        console.log(data.debug);
+        document.getElementById("output").innerHTML=data.debug;
+    });
+
+    socket.on("player", (data)=>{
+        let cell = document.querySelector("td[data-val="+"'"+data.cell+"'"+"]");
+        console.log("Coloring Cell: "+data.cell);
+        cell.style.backgroundColor = "red"; 
+    });
+</script>
+
+</html>

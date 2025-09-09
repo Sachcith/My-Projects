@@ -1,3 +1,9 @@
+from flask import Flask,render_template,request
+from flask_socketio import SocketIO,send
+
+app = Flask(__name__)
+socketio = SocketIO(app)
+
 import time
 class Board:
     def __init__(self,height=6,width=7):
@@ -46,24 +52,6 @@ class Board:
         y = [[-1,-2,-3],[-1,-2,-3],[-1,-2,-3],[0,0,0],[1,2,3],[1,2,3],[1,2,3]]
         index = self.height - self.valid[column]
         temp = self.board[index][column]
-        '''for i in range(7):
-            num = {"X":0,"O":0,0:0}
-            num[temp]=1
-            flag = True
-            for j in range(3):
-                y1 = column + y[i][j]
-                x1 = index + x[i][j]
-                if x1>=0 and y1>=0 and x1<self.height and y1<self.width:
-                    if (self.board[x1][y1]==temp or self.board[x1][y1]==0):# and y1>=self.valid[x1]-1:
-                        num[self.board[x1][y1]]+=1
-                    else:
-                        #flag=False #changed aug 8th night
-                        break
-                else:
-                    break
-            if flag:
-                pos[num[temp]]+=1'''
-        
         seven = [0 for i in range(7)]
         for i in range(7):
             num = {"X":0,"O":0,0:0}
@@ -73,7 +61,7 @@ class Board:
                 y1 = column + y[i][j]
                 x1 = index + x[i][j]
                 if x1>=0 and y1>=0 and x1<self.height and y1<self.width:
-                    if self.board[x1][y1]==temp or self.board[x1][y1]==0:# and y1>=self.valid[x1]-1:
+                    if self.board[x1][y1]==temp or self.board[x1][y1]==0:
                         num[self.board[x1][y1]]+=1
                     else:
                         break
@@ -108,7 +96,6 @@ class Board:
             for i in range(4):
                 heur[i] = heur[i+1]
             heur[4]=0
-            #ans = ans - self.score(heur)
             ans = ans + 2*self.score(self.heurSupport(column))
         else:
             self.insert(column,"X")
@@ -116,7 +103,6 @@ class Board:
             for i in range(4):
                 heur[i] = heur[i+1]
             heur[4]=0
-            #ans = self.score(heur) - ans
             ans = -1*(ans + 2*self.score(self.heurSupport(column)))
         self.delete(column)
         self.insert(column,temp)
@@ -140,7 +126,7 @@ class Board:
                 y1 = column + y[i][j]
                 x1 = index + x[i][j]
                 if x1>=0 and y1>=0 and x1<self.height and y1<self.width:
-                    if (self.board[x1][y1]==temp):# and y1>=self.valid[x1]-1:
+                    if (self.board[x1][y1]==temp):
                         num[self.board[x1][y1]]+=1
                     else:
                         flag=False
@@ -160,7 +146,7 @@ class Board:
                 y1 = column + y[i][j]
                 x1 = index + x[i][j]
                 if x1>=0 and y1>=0 and x1<self.height and y1<self.width:
-                    if self.board[x1][y1]==temp:# and y1>=self.valid[x1]-1:
+                    if self.board[x1][y1]==temp:
                         num[self.board[x1][y1]]+=1
                     else:
                         break
@@ -179,80 +165,37 @@ class Board:
         return pos
     
 class Connect4:
-    __board = None
-    __player = None
+    board = None
+    player = None
     def __init__(self):
-        self.__board = Board()
-        self.__player = True
-
-    def next_move(self,player,cur_depth,max_depth,column=0):
-        if cur_depth!=0:
-            score = self.__board.winloss(column)
-            if score[4]>0 and not player:
-                return float('inf'),column
-            elif score[4]>0 and player:
-                return float('-inf'),column
-        if cur_depth == max_depth:
-            return self.__board.heuristic(column),column
-
-        if player:
-            ma = float('-inf')
-            index = -1
-            for i in range(7):
-                if self.__board.insert(i,"X"):
-                    temp,j = self.next_move(False,cur_depth+1,max_depth,i)
-                    if temp >= ma:
-                        ma = temp
-                        index = i
-                    self.__board.delete(i)
-            return ma,index
-        else:
-            mi = float('inf')
-            index = -1
-            for i in range(7):
-                if self.__board.insert(i,"O"):
-                    temp,j = self.next_move(True,cur_depth+1,max_depth,i)
-                    if temp <= mi:
-                        mi = temp
-                        index = i
-                    self.__board.delete(i)
-            return mi,index
-
+        self.board = Board()
+        self.player = True
 
     def next_move_alpha_beta(self,player,cur_depth,max_depth,column=0,alpha=float('-inf'),beta=float('inf'),p=False):
         if cur_depth!=0:
-            score = self.__board.winloss(column)
+            score = self.board.winloss(column)
             if score[4]>0 and (not player):
                 return 10**5 + max_depth - cur_depth,column
-                #return float('inf'),column
             if score[4]>0 and player:
                 return -(10**5 + max_depth - cur_depth),column
-                #return float('-inf'),column
         if cur_depth == max_depth:
-            return self.__board.heuristic(column),column
+            return self.board.heuristic(column),column
 
         if player:
             ma = float('-inf')
             index = -1
             hello = ["N" for i in range(7)]
-            #for i in range(7):
-            #for i in range(6,-1,-1):
             for i in [3,2,4,1,5,0,6]:
-                if self.__board.insert(i,"X"):
+                if self.board.insert(i,"X"):
                     temp,j = self.next_move_alpha_beta(False,cur_depth+1,max_depth,i,alpha,beta)
-                    #if temp==float('inf'):
-                        #print("Temp inf")
-                    #temp = temp + max_depth - cur_depth
                     hello[i]=temp + max_depth - cur_depth
-                    self.__board.delete(i)
+                    self.board.delete(i)
                     if j!=-1:
                         if temp > ma:
                             ma = temp
                             index = i
                         alpha = max(temp,alpha)
-                        #beta = min(temp,beta)
                         if alpha >= beta:
-                            #print("Break 1")
                             break
             if hello==["N" for i in range(7)]:
                 return 0,column
@@ -263,24 +206,17 @@ class Connect4:
             mi = float('inf')
             index = -1
             hello = ["N" for i in range(7)]
-            #for i in range(7):
-            #for i in range(6,-1,-1):
             for i in [3,2,4,1,5,0,6]:
-                if self.__board.insert(i,"O"):
+                if self.board.insert(i,"O"):
                     temp,j = self.next_move_alpha_beta(True,cur_depth+1,max_depth,i,alpha,beta)
-                    #if temp==float('-inf'):
-                        #print(temp)
-                    #temp = temp + max_depth - cur_depth
                     hello[i]=temp - max_depth + cur_depth,j
-                    self.__board.delete(i)
+                    self.board.delete(i)
                     if j!=-1:
                         if temp < mi:
                             mi = temp
                             index = i
                         beta = min(temp,beta)
-                        #alpha = max(temp,alpha)
                         if alpha >= beta:
-                            #print("Break 2")
                             break
             if hello==["N" for i in range(7)]:
                 return 0,column
@@ -292,7 +228,7 @@ class Connect4:
     def start_game(self):
         print("Game Started")
         count = 42
-        self.__board.disp()
+        self.board.disp()
         while count!=0:
             count-=1
             move = -1
@@ -303,7 +239,7 @@ class Connect4:
                         temp = int(input("Enter a value from 1-7: "))
                         if temp<1 or temp>7:
                             continue
-                        if not self.__board.insert(temp-1,"X"):
+                        if not self.board.insert(temp-1,"X"):
                             continue
                         break
                     except KeyboardInterrupt:
@@ -317,12 +253,12 @@ class Connect4:
                 time1 = time.time()
                 val,index = self.next_move_alpha_beta(False,0,6,p=True)
                 print(f"Time taken by AI: {round(time.time()-time1,3)}s")
-                self.__board.insert(index,"O")
+                self.board.insert(index,"O")
                 move = index
                 print(f"Index: {index} Value: {val}")
-            final = self.__board.winloss(move,True)
+            final = self.board.winloss(move,True)
             print("Current move:",move+1)
-            self.__board.disp()
+            self.board.disp()
             if final[4]>0 and (not self.__player):
                 print("🟢 won")
                 break
@@ -333,131 +269,26 @@ class Connect4:
             print("Draw......Noice")
         print("Game Ended!!!")
 
-    def start_game_PVP(self):
-        print("Game Started")
-        count = 42
-        self.__board.disp()
-        while count!=0:
-            count-=1
-            move = -1
-            if self.__player:
-                self.__player = False
-                while True:
-                    try:
-                        temp = int(input("Enter a value from 1-7: "))
-                        if temp<1 or temp>7:
-                            continue
-                        if not self.__board.insert(temp-1,"X"):
-                            continue
-                        break
-                    except KeyboardInterrupt:
-                        exit()
-                    except:
-                        continue
-                move = temp-1
-            else:
-                self.__player = True
-                while True:
-                    try:
-                        temp = int(input("Enter a value from 1-7: "))
-                        if temp<1 or temp>7:
-                            continue
-                        if not self.__board.insert(temp-1,"O"):
-                            continue
-                        break
-                    except KeyboardInterrupt:
-                        exit()
-                    except:
-                        continue
-                move = temp-1
-            self.__board.heurSupport(move)#,True)
-            final = self.__board.winloss(move,True)
-            print("Current move:",move+1)
-            self.__board.disp()
-            if final[4]>0 and (not self.__player):
-                print("🟢 won")
-                break
-            elif final[4]>0 and self.__player:
-                print("🔴 won")
-                break
-        if count==0:
-            print("Draw......Noice")
-        print("Game Ended!!!")
+board = Connect4()
 
-    def start_game_AI_ONLY(self):
-        print("Game Started")
-        count = 42
-        self.__board.disp()
-        while count!=0:
-            count-=1
-            move = -1
-            if self.__player:
-                self.__player = False
-                val,index = self.next_move_alpha_beta(False,0,6)
-                self.__board.insert(index,"X")
-                move = index
-            else:
-                self.__player = True
-                val,index = self.next_move_alpha_beta(False,0,6)
-                self.__board.insert(index,"O")
-                move = index
-            _ = input("Press Enter to show next move:")
-            print(f"Index: {index} Value: {val}")
-            final = self.__board.winloss(move,True)
-            print("Current move:",move+1)
-            self.__board.disp()
-            if final[4]>0 and (not self.__player):
-                print("🟢 won")
-                break
-            elif final[4]>0 and self.__player:
-                print("🔴 won")
-                break
-        if count==0:
-            print("Draw......Noice")
-        print("Game Ended!!!")      
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@socketio.on("move")
+def move(data):
+    col = int(data["col"])
+    print(f"Column Clicked: {col}")
+    if(board.board.insert(col,"X")==False):
+        socketio.emit("debug",{"debug": "Column Already Full!!"})
+    else:
+        socketio.emit("debug",{"debug": "Okay!!"})
+        socketio.emit("player",{"cell":col+7*(6-board.board.valid[col])})
+        print(board.board.valid)
+
+    
 
 
 
-'''board = Board()
-board.disp()
-board.insert(1,"O")
-board.insert(2,"O")
-board.insert(3,"O")
-board.insert(4,"X")
-board.insert(4,"X")
-board.insert(4,"X")
-board.insert(4,"O")
-"""for i in range(2):
-    print(board.delete(1))"""
-board.disp()
-print(board.heurSupport(4))
-print(board.heuristic(4))
-'''
-
-'''
-x = [[-1,-2,-3],[0,0,0],[1,2,3],[1,2,3],[1,2,3],[0,0,0],[-1,-2,-3]]
-y = [[-1,-2,-3],[-1,-2,-3],[-1,-2,-3],[0,0,0],[1,2,3],[1,2,3],[1,2,3]]
-a = [["-" for i in range(7)] for j in range(7)]
-
-for i in range(7):
-    for j in range(3):
-        y1 = 3 + y[i][j]
-        x1 = 3 + x[i][j]
-        print(x1,y1,i)
-        if x1>=0 and y1>=0 and x1<7 and y1<7:
-            a[x1][y1]=i
-
-for i in a:
-    for j in i:
-        print(j,end=" ")
-    print()
-print()
-'''
-
-temp = Connect4()
-temp.start_game()
-
-# 3 4 5 5 3 4 4 2 1 3 3
-
-# 4 5 7 1 5 6 5 3 7 3 4 3 5 5 6 1 1 1 7 2
-# 5 4 4 3 2 3 3 7 6 5 6/2
+if __name__=="__main__":
+    app.run(debug=True)
