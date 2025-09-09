@@ -284,7 +284,11 @@ def move(data):
     else:
         socketio.emit("debug",{"debug": "Okay!!"})
         socketio.emit("player",{"cell":col+7*(6-board.board.valid[col])})
-        print(board.board.valid)
+        val,index = board.next_move_alpha_beta(False,0,6,p=True)
+        board.board.insert(index,"O")
+        move = index
+        print(f"Played by AI Index: {index} Value: {val}")
+        socketio.emit("ai",{"cell":move+7*(6-board.board.valid[move])})
 
     
 

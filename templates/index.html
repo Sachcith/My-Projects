@@ -59,11 +59,14 @@
 <script>
     const socket = io();
     let board = document.getElementById("table");
+    let click = true;
     board.addEventListener("click",(e)=>{
+        if(!click) return;
         if(e.target.tagName !== "TD") return;
         let col = e.target.dataset.col;
         console.log("Column Clicked: "+col);
         socket.emit("move",{"col":col})
+        click = false;
     });
 
     socket.on("debug",(data)=>{
@@ -75,6 +78,13 @@
         let cell = document.querySelector("td[data-val="+"'"+data.cell+"'"+"]");
         console.log("Coloring Cell: "+data.cell);
         cell.style.backgroundColor = "red"; 
+    });
+
+    socket.on("ai",(data)=>{
+        let cell = document.querySelector("td[data-val="+"'"+data.cell+"'"+"]");
+        console.log("Coloring Cell: "+data.cell);
+        cell.style.backgroundColor = "yellow"; 
+        click = true;
     });
 </script>
 
