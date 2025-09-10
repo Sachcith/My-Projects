@@ -36,6 +36,12 @@
     .debug {
         text-align: center;
     }
+    button {
+        background-color: white;
+        color: black;
+        border: 2px solid black;
+        border-radius: 3px;
+    }
 </style>
 
 <body>
@@ -92,14 +98,17 @@
     socket.on("ai",(data)=>{
         let cell = document.querySelector("td[data-val="+"'"+data.cell+"'"+"]");
         console.log("Coloring Cell: "+data.cell);
-        cell.style.backgroundColor = "yellowgreen"; 
-        click = true;
+        cell.style.backgroundColor = "yellowgreen";
     });
 
     socket.on("winloss",(data)=>{
         let output = document.getElementById("output");
         output.innerHTML = data.output;
         click = false;
+    });
+
+    socket.on("allow",(data)=>{
+        click = true;
     });
     /*
     function reset(){

@@ -271,6 +271,7 @@ class Connect4:
         print("Game Ended!!!")
 
 board = Connect4()
+count = 42
 
 @app.route('/')
 def home():
@@ -282,7 +283,10 @@ def move(data):
     print(f"Column Clicked: {col}")
     if(board.board.insert(col,"X")==False):
         socketio.emit("debug",{"debug": "Column Already Full!!"})
+        socketio.emit("allow",{})
     else:
+        global count
+        count-=1
         socketio.emit("debug",{"debug": "Okay!!"})
         temp = board.board.winloss(col)
         socketio.emit("player",{"cell":col+7*(6-board.board.valid[col])})
@@ -291,6 +295,7 @@ def move(data):
             return
         val,index = board.next_move_alpha_beta(False,0,6,p=True)
         board.board.insert(index,"O")
+        count=-1
         move = index
         print(f"Played by AI Index: {index} Value: {val}")
         socketio.emit("ai",{"cell":move+7*(6-board.board.valid[move])})
@@ -298,12 +303,19 @@ def move(data):
         if temp[4]>0:
             socketio.emit("winloss",{"output":"🟢 Won"})
             return
+        if count==0:
+            print("It is a Draw")
+            socketio.emit("winloss",{"cell","Draw!!!"})
+            return
+        socketio.emit("allow",{})
 
 @app.route('/resetThing',methods=["GET","POST"])
 def reset1():
     print("Inside reset")
     board.board.reset()
     print("Board Resetted...................")
+    global count
+    count = 42
     return redirect('/')
 
 '''
