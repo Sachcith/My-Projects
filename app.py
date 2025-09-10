@@ -1,4 +1,4 @@
-from flask import Flask,render_template,request
+from flask import Flask,render_template,redirect
 from flask_socketio import SocketIO,send
 
 app = Flask(__name__)
@@ -135,8 +135,6 @@ class Board:
                     break
             if flag:
                 pos[num[temp]]+=1
-        
-        
         seven = [0 for i in range(7)]
         for i in range(7):
             num = {"X":0,"O":0,0:0}
@@ -163,6 +161,9 @@ class Board:
         if p:
             print(seven)
         return pos
+    def reset(self):
+        self.board = self.createMatrix()
+        self.valid = [0 for i in range(self.width)]
     
 class Connect4:
     board = None
@@ -273,7 +274,7 @@ board = Connect4()
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('index.html',board=board.board.board)
 
 @socketio.on("move")
 def move(data):
@@ -283,16 +284,37 @@ def move(data):
         socketio.emit("debug",{"debug": "Column Already Full!!"})
     else:
         socketio.emit("debug",{"debug": "Okay!!"})
+        temp = board.board.winloss(col)
         socketio.emit("player",{"cell":col+7*(6-board.board.valid[col])})
+        if temp[4]>0:
+            socketio.emit("winloss",{"output":"🔴 Won"})
+            return
         val,index = board.next_move_alpha_beta(False,0,6,p=True)
         board.board.insert(index,"O")
         move = index
         print(f"Played by AI Index: {index} Value: {val}")
         socketio.emit("ai",{"cell":move+7*(6-board.board.valid[move])})
+        temp = board.board.winloss(move)
+        if temp[4]>0:
+            socketio.emit("winloss",{"output":"🟡 Won"})
+            return
 
-    
+@app.route('/resetThing',methods=["GET","POST"])
+def reset1():
+    print("Inside reset")
+    board.board.reset()
+    print("Board Resetted...................")
+    return redirect('/')
 
-
+'''
+@socketio.on("reset")
+def reset(data):
+    print("Inside reset")
+    if data["reset"]==1:
+        board.board.reset()
+        print("Board Resetted...................")
+        return redirect('/')
+'''
 
 if __name__=="__main__":
     app.run(debug=True)

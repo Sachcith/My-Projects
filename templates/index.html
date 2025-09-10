@@ -6,7 +6,7 @@
     <title>Connect 4 Game</title>
 </head>
 
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="{{url_for('static',filename='socketio.min.js')}}"></script>
 
 <style>
     body {
@@ -44,7 +44,13 @@
             {% for i in range(6) %}
                 <tr>
                     {% for j in range(7) %}
-                        <td data-val="{{i*7+j}}" data-col="{{j}}">{{j}}</td>
+                        {% if board[i][j]=="X" %}
+                            <td data-val="{{i*7+j}}" data-col="{{j}}" style="background-color: red;">{{j}}</td>
+                        {% elif board[i][j]=="O" %}
+                            <td data-val="{{i*7+j}}" data-col="{{j}}" style="background-color: yellow;">{{j}}</td>
+                        {% else %}
+                            <td data-val="{{i*7+j}}" data-col="{{j}}" style="background-color: white;">{{j}}</td>
+                        {% endif %}
                     {% endfor %}
                 </tr>
             {% endfor %}
@@ -52,7 +58,10 @@
     </div>
 
     <div class="Output">
-        <h3 id="output">Debug Statements Appear Here</h3>
+        <center>
+            <h3 id="output">Debug Statements Appear Here</h3>
+            <a href="/resetThing"><button>Reset</button></a>
+        </center>
     </div>
 </body>
 
@@ -86,6 +95,19 @@
         cell.style.backgroundColor = "yellow"; 
         click = true;
     });
+
+    socket.on("winloss",(data)=>{
+        let output = document.getElementById("output");
+        output.innerHTML = data.output;
+        click = false;
+    });
+    /*
+    function reset(){
+        console.log("Board Reseted!!");
+        socket.emit("reset",{"reset":1});
+    }
+    */
+
 </script>
 
 </html>
