@@ -293,9 +293,13 @@ def move(data):
         if temp[4]>0:
             socketio.emit("winloss",{"output":"🔴 Won"})
             return
-        val,index = board.next_move_alpha_beta(False,0,6,p=True)
+        val,index=0,0
+        if count<17:
+            val,index = board.next_move_alpha_beta(False,0,max(count,2),p=True)
+        else:
+            val,index = board.next_move_alpha_beta(False,0,6,p=True)
         board.board.insert(index,"O")
-        count=-1
+        count-=1
         move = index
         print(f"Played by AI Index: {index} Value: {val}")
         socketio.emit("ai",{"cell":move+7*(6-board.board.valid[move])})
@@ -303,9 +307,10 @@ def move(data):
         if temp[4]>0:
             socketio.emit("winloss",{"output":"🟢 Won"})
             return
+        print(f"Count: {count}")
         if count==0:
             print("It is a Draw")
-            socketio.emit("winloss",{"cell","Draw!!!"})
+            socketio.emit("winloss",{"output":"Draw!!"})
             return
         socketio.emit("allow",{})
 
