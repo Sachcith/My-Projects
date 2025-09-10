@@ -47,7 +47,7 @@
                         {% if board[i][j]=="X" %}
                             <td data-val="{{i*7+j}}" data-col="{{j}}" style="background-color: red;">{{j}}</td>
                         {% elif board[i][j]=="O" %}
-                            <td data-val="{{i*7+j}}" data-col="{{j}}" style="background-color: yellow;">{{j}}</td>
+                            <td data-val="{{i*7+j}}" data-col="{{j}}" style="background-color: yellowgreen;">{{j}}</td>
                         {% else %}
                             <td data-val="{{i*7+j}}" data-col="{{j}}" style="background-color: white;">{{j}}</td>
                         {% endif %}
@@ -92,7 +92,7 @@
     socket.on("ai",(data)=>{
         let cell = document.querySelector("td[data-val="+"'"+data.cell+"'"+"]");
         console.log("Coloring Cell: "+data.cell);
-        cell.style.backgroundColor = "yellow"; 
+        cell.style.backgroundColor = "yellowgreen"; 
         click = true;
     });
 

@@ -296,7 +296,7 @@ def move(data):
         socketio.emit("ai",{"cell":move+7*(6-board.board.valid[move])})
         temp = board.board.winloss(move)
         if temp[4]>0:
-            socketio.emit("winloss",{"output":"🟡 Won"})
+            socketio.emit("winloss",{"output":"🟢 Won"})
             return
 
 @app.route('/resetThing',methods=["GET","POST"])
