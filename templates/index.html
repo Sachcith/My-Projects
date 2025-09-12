@@ -90,7 +90,7 @@
     });
 
     socket.on("player", (data)=>{
-        let cell = document.querySelector("td[data-val="+"'"+data.cell+"'"+"]");
+        let cell = document.querySelector("td[data-val='"+data.cell+"']");
         console.log("Coloring Cell: "+data.cell);
         cell.style.backgroundColor = "red"; 
     });

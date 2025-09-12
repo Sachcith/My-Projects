@@ -1,5 +1,5 @@
 from flask import Flask,render_template,redirect
-from flask_socketio import SocketIO,send
+from flask_socketio import SocketIO
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -281,7 +281,7 @@ def home():
 def move(data):
     col = int(data["col"])
     print(f"Column Clicked: {col}")
-    if(board.board.insert(col,"X")==False):
+    if board.board.insert(col,"X")==False:
         socketio.emit("debug",{"debug": "Column Already Full!!"})
         socketio.emit("allow",{})
     else:
